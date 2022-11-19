@@ -1,0 +1,2 @@
+# YS-STG
+GNU-YS-MiniGames YS-STG
