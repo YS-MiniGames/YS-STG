@@ -1,4 +1,5 @@
 import pygame
+import sys
 import random
 
 class Sprite():
@@ -176,6 +177,27 @@ class BigEnemy(Sprite):
         pygame.mixer.Sound('audio/kill.wav').play()
         self.trash()
 
+class Special_BigEnemy_1(Sprite):
+    def __init__(self, x, y, hp=25, text=0):
+        Sprite.__init__(self, x, y, 's_enemy.png', 200, 60, 60, 60, ['enemy', 2, text])
+        self.hp = hp
+
+    def game_event(self):
+        if self.rect.top > 768 or self.rect.bottom < 0 or self.rect.left > 1360 or self.rect.right < 0:
+            self.trash()
+        if self.hp <= 0:
+            self.dead()
+        if self.tick < 120:
+            self.y += 1
+
+    def dead(self):
+        global game
+        for i in range(5):
+            if random.randint(0,3) == 0:
+                game.group.append(Point(self.x+random.randint(-10, 10), self.y+random.randint(-10, 10)))
+        pygame.mixer.Sound('audio/kill.wav').play()
+        self.trash()
+
 
 class PlayerBullet(Sprite):
 
@@ -283,6 +305,9 @@ class Game():
                 if keys[pygame.K_1]:
                     self.state = 1
                     self.diff = 0
+                if keys[pygame.K_2]:
+                    self.state = 1
+                    self.diff = 1
             else:
                 self.group[0].image = pygame.image.load(
                     'images/bg.png').convert_alpha()
@@ -290,6 +315,8 @@ class Game():
             if self.state == 1:
                 if self.diff == 0:
                     self.easy_game_start()
+                elif self.diff == 1:
+                    self.normal_game_start()
 
             for i in self.group:
                 if i.deleted == True:
@@ -321,30 +348,77 @@ class Game():
             self.screen.blit(game_over, (0, 0))
             if keys[pygame.K_ESCAPE]:
                 pygame.quit()
-                exit()
+                sys.exit()
 
     def enemy_spawn(self, ph, tick):
-        if self.ph == ph and self.gt >= tick:
-            self.gt = 0
-            self.ph += 1
-            return True
-        else:
-            self.gt += 1
-            return False
+        if self.ph == ph:
+            if self.gt >= tick:
+                self.gt = 0
+                self.ph += 1
+                return True
+            else:
+                self.gt += 1
+                return False
 
     def easy_game_start(self):
         if self.enemy_spawn(0, 120):
             self.group.append(Enemy(640, 0))
-        elif self.enemy_spawn(1, 120):
+        if self.enemy_spawn(1, 120):
             self.group.append(Enemy(540, 0))
             self.group.append(Enemy(640, 0, 6))
             self.group.append(Enemy(740, 0))
-        elif self.enemy_spawn(2, 120):
+        if self.enemy_spawn(2, 120):
             self.group.append(Enemy(390, 0))
             self.group.append(Enemy(540, 0))
             self.group.append(BigEnemy(625, 0))
             self.group.append(Enemy(740, 0))
-            self.group.append(Point(890, 0))
+            self.group.append(Enemy(890, 0))
+    
+    def normal_game_start(self):
+        if self.enemy_spawn(0, 60):
+            self.group.append(Enemy(540, 0))
+            self.group.append(Enemy(640, 0, 6))
+            self.group.append(Enemy(740, 0))
+        if self.enemy_spawn(1, 60):
+            self.group.append(Enemy(540, 0))
+            self.group.append(Enemy(640, 0, 6))
+            self.group.append(Enemy(740, 0))
+        if self.enemy_spawn(2, 60):
+            self.group.append(Enemy(390, 0))
+            self.group.append(Enemy(540, 0))
+            self.group.append(BigEnemy(625, 0))
+            self.group.append(Enemy(740, 0))
+            self.group.append(Enemy(890, 0))
+        if self.enemy_spawn(3, 90):
+            self.group.append(Enemy(390, 0))
+            self.group.append(BigEnemy(525, 0))
+            self.group.append(Special_BigEnemy_1(610, 0))
+            self.group.append(BigEnemy(725, 0))
+            self.group.append(Enemy(890, 0))
+        f=False
+        for i in self.group:
+            if i.text==['enemy',2,0]:
+                f=True
+        if self.ph == 4:
+            if self.gt >= 300 or f is False:
+                self.gt = 0
+                self.ph += 1
+            else:
+                self.gt += 1
+        if self.enemy_spawn(5, 10):
+            self.group.append(Enemy(140, 0))
+            self.group.append(Enemy(240, 0))
+            self.group.append(Enemy(340, 0))
+            self.group.append(Enemy(440, 0))
+            self.group.append(Enemy(540, 0))
+            self.group.append(Enemy(640, 0))
+            self.group.append(Enemy(740, 0))
+            self.group.append(Enemy(840, 0))
+            self.group.append(Enemy(940, 0))
+            self.group.append(Enemy(1040, 0))
+            self.group.append(Enemy(1140, 0))
+            self.group.append(Enemy(1240, 0))
+        # print(self.gt,self.ph,f)
 
 
 def init():
@@ -357,7 +431,7 @@ def handle_event():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            exit()
+            sys.exit()
 
 
 def game_event():
